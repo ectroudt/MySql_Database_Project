@@ -1,0 +1,75 @@
+
+#1 Search for the top 5 Proteins that interact with LRRK2, and are supported by both evidence from experiments (escore), and similairty in expression data (ascore)
+
+select Parkinsons_Proteins.Park_Protein_Name, left(non_Parkinsons_Proteins.All_Protein_Names,50) as Protein_Names, non_Parkinsons_Proteins.Uniprot_ID, Interactions.escore, Interactions.ascore 
+from Parkinsons_Phenotype 
+inner join Parkinsons_Proteins on Parkinsons_Phenotype.MIM_Gene_Number = Parkinsons_Proteins.MIM_Gene_Number 
+inner join Interactions on Parkinsons_Proteins.Park_STRING_ID = Interactions.Park_STRING_ID 
+inner join non_Parkinsons_Proteins on Interactions.nonPark_STRING_ID = non_Parkinsons_Proteins.nonPark_STRING_ID  
+where Parkinsons_Proteins.Park_Protein_Name = 'LRRK2' and Interactions.escore <> 0 and Interactions.ascore <> 0
+order by Interactions.total_score desc
+limit 5;
+
+
+
+#2 Obtain all Parkinson's Phenotypes that are associated with the Gene/Protein 'SNCA'
+
+select Parkinsons_Phenotype, Mode_of_Inheritance 
+from Parkinsons_Proteins 
+inner join Parkinsons_Phenotype on Parkinsons_Proteins.MIM_Gene_Number = Parkinsons_Phenotype.MIM_Gene_Number 
+where Parkinsons_Proteins.Park_Protein_Name = 'SNCA';
+
+
+
+
+#3 Select the top 5 most supported protein interactions for the Parkinson's gene 'GLUD2'
+
+select Parkinsons_Proteins.Park_Protein_Name, Interactions.nonPark_Protein_Name, Interactions.total_score, non_Parkinsons_Proteins.Uniprot_ID 
+from Parkinsons_Proteins 
+inner join Interactions on Parkinsons_Proteins.Park_STRING_ID = Interactions.Park_STRING_ID 
+inner join non_Parkinsons_Proteins on Interactions.nonPark_STRING_ID = non_Parkinsons_Proteins.nonPark_STRING_ID 
+where Parkinsons_Proteins.Park_Protein_Name = 'GLUD2' 
+order by Interactions.total_score desc  
+limit 5;
+
+
+#4 Determine which Parkinson's Proteins are associated with Parkinson's Phenotypes that an Autosomal Recessive (AR) mode of inheritance
+
+select Parkinsons_Proteins.Park_Protein_Name, Parkinsons_Phenotype, Mode_of_Inheritance 
+from Parkinsons_Proteins 
+inner join Parkinsons_Phenotype on Parkinsons_Proteins.MIM_Gene_Number = Parkinsons_Phenotype.MIM_Gene_Number
+where Mode_of_Inheritance = 'AR';
+
+
+#5 How many protein interactions exist for Parkinson's Phenotypes-Gene pairs where the mode of inheritance is not known/listed?
+
+select Parkinsons_Phenotype, Parkinsons_Proteins.Park_Protein_Name, count(Interactions.nonPark_Protein_Name) as 'Num of Interactions' 
+from Parkinsons_Phenotype 
+inner join Parkinsons_Proteins on Parkinsons_Phenotype.MIM_Gene_Number = Parkinsons_Proteins.MIM_Gene_Number  
+inner join Interactions on Parkinsons_Proteins.Park_STRING_ID = Interactions.Park_STRING_ID  
+inner join non_Parkinsons_Proteins on Interactions.nonPark_STRING_ID = non_Parkinsons_Proteins.nonPark_STRING_ID  
+where Mode_of_Inheritance = ''  
+group by Parkinsons_Phenotype.Parkinsons_Phenotype;
+
+
+#6 Obtain both Parkinson's Phenotype and Parkinson's Gene/Protein information for those that with a mode of inheritance that is Autosomal Dominant (AD)
+
+select Parkinsons_Phenotype, Mode_of_Inheritance, Parkinsons_Proteins.Park_Protein_Name, Annotations 
+from Parkinsons_Phenotype 
+inner join Parkinsons_Proteins on Parkinsons_Phenotype.MIM_Gene_Number = Parkinsons_Proteins.MIM_Gene_Number  
+where Mode_of_Inheritance = 'AD';
+
+
+#7 Retrieve information between both the Parkinson's protein and the interacting protein for the top 7 interactions of the 'PARK7'
+
+select Parkinsons_Proteins.Park_Protein_Name, total_score, non_Parkinsons_Proteins.nonPark_Protein_Name, Uniprot_ID, All_Protein_Names, All_Gene_Names 
+from Parkinsons_Proteins 
+inner join Interactions using (Park_STRING_ID) 
+inner join non_Parkinsons_Proteins using (nonPark_STRING_ID)
+where Parkinsons_Proteins.Park_Protein_Name = 'PARK7' 
+order by total_score desc 
+limit 7;
+
+
+
+
